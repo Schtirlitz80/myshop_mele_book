@@ -11,6 +11,6 @@ app.autodiscover_tasks()
 
 
 # Строчки добавленные с официальных доков по Celery:
-@app.task(bind=True)
-def debug_task(self):
-    print(f'Request: {self.request!r}')
+# @app.task(bind=True)
+# def debug_task(self):
+#     print(f'Request: {self.request!r}')
