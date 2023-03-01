@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os.path
 from pathlib import Path
+from braintree import Configuration, Environment
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -132,3 +133,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 CART_SESSION_ID = 'cart'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Настройки Braintree
+BRAINTREE_MERCHANT_ID = 'ktqtkdzzdskh75np'  # ID продавца.
+BRAINTREE_PUBLIC_KEY = 'kqby4c8sf8kdn2g6'  # Публичный ключ.
+BRAINTREE_PRIVATE_KEY = '22d942043b593d56ea0523a64de3d63e'  # Секретный ключ.
+
+Configuration.configure(
+    Environment.Sandbox,
+    BRAINTREE_MERCHANT_ID,
+    BRAINTREE_PUBLIC_KEY,
+    BRAINTREE_PRIVATE_KEY
+)
