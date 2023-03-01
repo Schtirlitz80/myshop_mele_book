@@ -5,6 +5,30 @@ import datetime
 from .models import Order, OrderItem
 
 
+def export_to_csv(modeladmin, request, queryset):
+    opts = modeladmin.model._meta
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment;' \
+                                      'filename={}.csv'.format(opts.verbose_name)
+    writer = csv.writer(response)
+
+    fields = [field for field in opts.get_fields() if not field.many_to_many \
+              and not field.one_to_many]
+    # Записываем первую строку с заголовками полей.
+    writer.writerow([field.verbose_name for field in fields])
+    # Записываем данные.
+    for obj in queryset:
+        data_row = []
+        for field in fields:
+            value = getattr(obj, field.name)
+            if isinstance(value, datetime.datetime):
+                value = value.strftime('%d/%m/%Y')
+            data_row.append(value)
+        writer.writerow(data_row)
+    return response
+export_to_csv.short_description = 'Export to CSV'
+
+
 # Register your models here.
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
@@ -13,34 +37,11 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    def export_to_csv(modeladmin, request, queryset):
-        opts = modeladmin.model._meta
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment;' \
-                                          'filename={}.csv'.format(opts.verbose_name)
-        writer = csv.writer(response)
-
-        fields = [field for field in opts.get_fields() if not field.many_to_many \
-                  and not field.one_to_many]
-        # Записываем первую строку с заголовками полей.
-        writer.writerow([field.verbose_name for field in fields])
-        # Записываем данные.
-        for obj in queryset:
-            data_row = []
-            for field in fields:
-                value = getattr(obj, field.name)
-                if isinstance(value, datetime.datetime):
-                    value = value.strftime('%d/%m/%Y')
-                data_row.append(value)
-            writer.writerow(data_row)
-        return response
-        export_to_csv.short_description = 'Export to CSV'
-
-        list_display = ['id', 'first_name', 'last_name', 'email',
+    list_display = ['id', 'first_name', 'last_name', 'email',
                         'address', 'postal_code', 'city', 'paid',
                         'created', 'updated']
 
-        list_filter = ['paid', 'created', 'updated']
-        inlines = [OrderItemInline]
-        actions = [export_to_csv]
+    list_filter = ['paid', 'created', 'updated']
+    inlines = [OrderItemInline]
+    actions = [export_to_csv]
 
